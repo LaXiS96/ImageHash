@@ -29,7 +29,7 @@ namespace LaXiS.ImageHash
 
             List<Task> taskList = new List<Task>();
 
-            DirectoryInfo dir = new DirectoryInfo(@"\\10.10.0.201\priv\p\1\");
+            DirectoryInfo dir = new DirectoryInfo(@"test/");
 
             int count = 0;
             foreach (FileInfo file in dir.EnumerateFiles())
@@ -40,13 +40,13 @@ namespace LaXiS.ImageHash
                     continue;
 
                 count++;
-                if (count > 500)
-                    continue;
+                // if (count > 500)
+                //     continue;
 
                 taskList.Add(Task<string>.Factory.StartNew(o =>
                 {
                     string md5Hash = "";
-                    UInt64 averageHash = 0;
+                    // UInt64 averageHash = 0;
                     UInt64 differenceHash = 0;
 
                     FileStream imageStream = o as FileStream;
@@ -183,20 +183,6 @@ namespace LaXiS.ImageHash
 
                 return hash;
             }
-        }
-
-        private static int HammingDistance(UInt64 hash1, UInt64 hash2)
-        {
-            UInt64 xor = hash1 ^ hash2;
-            int distance = 0;
-
-            while (xor > 0)
-            {
-                distance += (int)xor & 1;
-                xor >>= 1;
-            }
-
-            return distance;
         }
     }
 

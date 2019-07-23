@@ -1,3 +1,3 @@
 # ImageHash
 
-Perceptual image hashing C# implementation
+README in construction

@@ -1,15 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
 // using LiteDB;
-using SixLabors.Primitives;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
+using LaXiS.ImageHash.Shared;
 
 namespace LaXiS.ImageHash.Processor
 {
@@ -34,9 +28,8 @@ namespace LaXiS.ImageHash.Processor
             int count = 0;
             foreach (FileInfo file in dir.EnumerateFiles())
             {
-                FileStream fileStream = file.OpenRead();
-                IImageFormat format = Image.DetectFormat(fileStream);
-                if (format == null || !mimeTypesFilter.Contains(format.DefaultMimeType))
+                FileStream stream = file.OpenRead();
+                if (!mimeTypesFilter.Contains(ImageInfo.GetMimeType(stream)))
                     continue;
 
                 count++;
@@ -52,13 +45,13 @@ namespace LaXiS.ImageHash.Processor
                     FileStream imageStream = o as FileStream;
 
                     imageStream.Position = 0;
-                    md5Hash = Md5Hash(imageStream);
+                    md5Hash = Hashing.Md5Hash(imageStream);
 
                     // imageStream.Position = 0;
                     // averageHash = AverageHash(imageStream);
 
                     imageStream.Position = 0;
-                    differenceHash = DifferenceHash(imageStream);
+                    differenceHash = Hashing.DifferenceHash(imageStream);
 
                     imageStream.Dispose();
 
@@ -85,7 +78,7 @@ namespace LaXiS.ImageHash.Processor
                     // imageFilesCollection.EnsureIndex("Md5Hash");
 
                     // Console.WriteLine($"{file.Name} {md5Hash} {averageHash:x16}");
-                }, fileStream));
+                }, stream));
             }
 
             Task.WaitAll(taskList.ToArray());
@@ -102,95 +95,13 @@ namespace LaXiS.ImageHash.Processor
                 }
             }
         }
-
-        private static string Md5Hash(FileStream file)
-        {
-            using (var md5 = MD5.Create())
-            {
-                byte[] data = md5.ComputeHash(file);
-
-                StringBuilder str = new StringBuilder();
-                for (int i = 0; i < data.Length; i++)
-                    str.Append(data[i].ToString("x2"));
-
-                return str.ToString();
-            }
-        }
-
-        // http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
-        private static UInt64 AverageHash(FileStream file)
-        {
-            using (Image<Rgba32> image = Image.Load<Rgba32>(file))
-            {
-                // Convert to grayscale and resize to 8x8
-                image.Mutate(o =>
-                {
-                    o.Grayscale();
-                    o.Resize(new ResizeOptions
-                    {
-                        Size = new Size(8),
-                        Mode = ResizeMode.Stretch
-                    });
-                });
-
-                // Calculate average pixel value
-                int sum = 0;
-                for (int i = 0; i < 64; i++)
-                {
-                    sum += image[i, 0].R;
-                }
-                float average = (float)sum / 64;
-
-                // Construct 64 bit hash
-                UInt64 hash = 0;
-                for (int i = 0; i < 64; i++)
-                {
-                    if (image[i, 0].R >= average)
-                        hash |= (UInt64)1 << (63 - i);
-                }
-
-                return hash;
-            }
-        }
-
-        // http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
-        private static UInt64 DifferenceHash(FileStream file)
-        {
-            using (Image<Rgba32> image = Image.Load<Rgba32>(file))
-            {
-                // Convert to grayscale and resize to 9x8
-                image.Mutate(o =>
-                {
-                    o.Grayscale();
-                    o.Resize(new ResizeOptions
-                    {
-                        Size = new Size(9, 8),
-                        Mode = ResizeMode.Stretch
-                    });
-                });
-
-                // Compute differences between adjacent pixels and construct hash
-                UInt64 hash = 0;
-                for (int y = 0, i = 0; y < 8; y++)
-                {
-                    for (int x = 0; x < 8; x++, i++)
-                    {
-                        // Console.WriteLine($"{x} {y} {i} {image[x, y].R} {image[x + 1, y].R}");
-                        if (image[x, y].R > image[x + 1, y].R)
-                            hash |= (UInt64)1 << (63 - i);
-                    }
-                }
-
-                return hash;
-            }
-        }
     }
 
-    public class ImageFile
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Md5Hash { get; set; }
-        public UInt64 AverageHash { get; set; }
-    }
+    // public class ImageFile
+    // {
+    //     public Guid Id { get; set; }
+    //     public string Name { get; set; }
+    //     public string Md5Hash { get; set; }
+    //     public UInt64 AverageHash { get; set; }
+    // }
 }

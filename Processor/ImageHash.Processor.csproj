@@ -7,7 +7,10 @@
 
   <ItemGroup>
     <PackageReference Include="LiteDB" Version="4.1.4" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002762" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\ImageHash.Shared.csproj" />
   </ItemGroup>
 
 </Project>

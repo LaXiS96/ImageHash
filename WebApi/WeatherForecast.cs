@@ -1,6 +1,6 @@
 using System;
 
-namespace WebApi
+namespace LaXiS.ImageHash.WebApi
 {
     public class WeatherForecast
     {

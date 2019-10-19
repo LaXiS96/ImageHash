@@ -1,5 +1,5 @@
-﻿using LaXiS.ImageHash.WebApi.Models;
-using LaXiS.ImageHash.WebApi.Services;
+﻿using LaXiS.ImageHash.WebApi.Domain.Models;
+using LaXiS.ImageHash.WebApi.Domain.Services;
 using LiteDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -13,24 +13,24 @@ namespace LaXiS.ImageHash.WebApi.Controllers
     public class ImagesController : ControllerBase
     {
         private ILogger<ImagesController> _logger;
-        private ImagesService _imagesService;
+        private IImageService _imageService;
 
-        public ImagesController(ILogger<ImagesController> logger, ImagesService imagesService)
+        public ImagesController(ILogger<ImagesController> logger, IImageService imagesService)
         {
             _logger = logger;
-            _imagesService = imagesService;
+            _imageService = imagesService;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ImageModel>> Get()
+        public ActionResult<List<Image>> Get()
         {
-            return _imagesService.Read().ToList();
+            return _imageService.GetAll();
         }
 
         [HttpGet("{id}", Name = "GetImage")]
-        public ActionResult<ImageModel> Get(string id)
+        public ActionResult<Image> Get(string id)
         {
-            ImageModel image = _imagesService.Read(id);
+            Image image = _imageService.GetById(id);
 
             if (image == null)
                 return NotFound();
@@ -39,14 +39,14 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ImageModel> Post([FromBody] ImageModel image)
+        public ActionResult<Image> Post([FromBody] Image image)
         {
-            ActionResult<ImageModel> result;
+            ActionResult<Image> result;
 
             try
             {
-                _imagesService.Create(image);
-                result = CreatedAtRoute("GetImage", new { id = image.Id.ToString() }, image);
+                string id = _imageService.Add(image);
+                result = CreatedAtRoute("GetImage", new { id }, image);
             }
             catch (LiteException e) when (e.ErrorCode == LiteException.INDEX_DUPLICATE_KEY)
             {
@@ -57,7 +57,7 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public void Put(string id, [FromBody] ImageModel image)
+        public void Put(string id, [FromBody] Image image)
         {
             // TODO implement put
         }
@@ -65,12 +65,8 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(string id)
         {
-            ImageModel image = _imagesService.Read(id);
-
-            if (image == null)
+            if (!_imageService.RemoveById(id))
                 return NotFound();
-
-            _imagesService.Delete(id);
 
             return NoContent();
         }

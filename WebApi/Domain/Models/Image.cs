@@ -1,15 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace LaXiS.ImageHash.WebApi.Models
+﻿namespace LaXiS.ImageHash.WebApi.Domain.Models
 {
-    public class ImageModel
+    public class Image
     {
         public string Id { get; set; }
 
-        [Required]
         public string Name { get; set; }
 
-        [Required]
         public HashInfo Hashes { get; set; }
 
         public string Url { get; set; }

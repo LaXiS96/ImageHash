@@ -1,4 +1,7 @@
-using LaXiS.ImageHash.WebApi.Models;
+using LaXiS.ImageHash.WebApi.Domain.Models;
+using LaXiS.ImageHash.WebApi.Domain.Repositories;
+using LaXiS.ImageHash.WebApi.Domain.Services;
+using LaXiS.ImageHash.WebApi.Persistence.Repositories;
 using LaXiS.ImageHash.WebApi.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,7 +28,8 @@ namespace LaXiS.ImageHash.WebApi
 
             services.AddSingleton<ILiteDBSettings>(sp => sp.GetRequiredService<IOptions<LiteDBSettings>>().Value);
 
-            services.AddSingleton<ImagesService>();
+            services.AddScoped<IImageRepository, ImageRepository>();
+            services.AddScoped<IImageService, ImageService>();
 
             services.AddControllers();
         }

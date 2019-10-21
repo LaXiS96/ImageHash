@@ -1,3 +1,4 @@
+using AutoMapper;
 using LaXiS.ImageHash.WebApi.Domain.Models;
 using LaXiS.ImageHash.WebApi.Domain.Repositories;
 using LaXiS.ImageHash.WebApi.Domain.Services;
@@ -24,6 +25,8 @@ namespace LaXiS.ImageHash.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(Startup));
+
             services.Configure<LiteDBSettings>(Configuration.GetSection("LiteDB"));
 
             services.AddSingleton<ILiteDBSettings>(sp => sp.GetRequiredService<IOptions<LiteDBSettings>>().Value);

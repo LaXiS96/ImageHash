@@ -1,16 +1,17 @@
 ﻿using LaXiS.ImageHash.WebApi.Domain.Models;
+using LaXiS.ImageHash.WebApi.Domain.Services.Communication;
 using System.Collections.Generic;
 
 namespace LaXiS.ImageHash.WebApi.Domain.Services
 {
     public interface IImageService
     {
-        List<Image> GetAll();
+        Response<IEnumerable<Image>> GetAll();
 
-        Image GetById(string id);
+        Response<Image> GetById(string id);
 
-        string Add(Image image);
+        Response<Image> Add(Image image);
 
-        bool RemoveById(string id);
+        Response RemoveById(string id);
     }
 }

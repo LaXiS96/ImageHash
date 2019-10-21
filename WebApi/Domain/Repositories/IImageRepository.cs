@@ -7,7 +7,7 @@ namespace LaXiS.ImageHash.WebApi.Domain.Repositories
     {
         string Create(Image image);
 
-        List<Image> Read();
+        IEnumerable<Image> Read();
 
         Image Read(string id);
 

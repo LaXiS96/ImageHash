@@ -2,6 +2,7 @@
 using LaXiS.ImageHash.WebApi.Domain.Models;
 using LaXiS.ImageHash.WebApi.Domain.Repositories;
 using LaXiS.ImageHash.WebApi.Domain.Services;
+using LaXiS.ImageHash.WebApi.Domain.Services.Communication;
 
 namespace LaXiS.ImageHash.WebApi.Services
 {
@@ -14,24 +15,37 @@ namespace LaXiS.ImageHash.WebApi.Services
             _imageRepository = imageRepository;
         }
 
-        public string Add(Image image)
+        public Response<Image> Add(Image image)
         {
-            return _imageRepository.Create(image);
+            string id = _imageRepository.Create(image);
+
+            if (!string.IsNullOrWhiteSpace(id))
+            {
+                image = _imageRepository.Read(id);
+
+                return new Response<Image>(true, string.Empty, image);
+            }
+            else
+            {
+                return new Response<Image>(false, "Returned Id is empty", null);
+            }
+
         }
 
-        public List<Image> GetAll()
+        public Response<IEnumerable<Image>> GetAll()
         {
-            return _imageRepository.Read();
+            return new Response<IEnumerable<Image>>(true, string.Empty, _imageRepository.Read());
         }
 
-        public Image GetById(string id)
+        public Response<Image> GetById(string id)
         {
-            return _imageRepository.Read(id);
+            return new Response<Image>(true, string.Empty, _imageRepository.Read(id));
         }
 
-        public bool RemoveById(string id)
+        public Response RemoveById(string id)
         {
-            return _imageRepository.Delete(id);
+            bool result = _imageRepository.Delete(id);
+            return new Response(result, result ? string.Empty : "Id not found");
         }
     }
 }

@@ -1,5 +1,8 @@
-﻿using LaXiS.ImageHash.WebApi.Domain.Models;
+﻿using AutoMapper;
+using LaXiS.ImageHash.WebApi.Domain.Models;
 using LaXiS.ImageHash.WebApi.Domain.Services;
+using LaXiS.ImageHash.WebApi.Domain.Services.Communication;
+using LaXiS.ImageHash.WebApi.Resources;
 using LiteDB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,61 +15,82 @@ namespace LaXiS.ImageHash.WebApi.Controllers
     [Route("[controller]")]
     public class ImagesController : ControllerBase
     {
-        private ILogger<ImagesController> _logger;
-        private IImageService _imageService;
+        private readonly ILogger<ImagesController> _logger;
+        private readonly IMapper _mapper;
+        private readonly IImageService _imageService;
 
-        public ImagesController(ILogger<ImagesController> logger, IImageService imagesService)
+        public ImagesController(ILogger<ImagesController> logger, IMapper mapper, IImageService imagesService)
         {
             _logger = logger;
+            _mapper = mapper;
             _imageService = imagesService;
         }
 
         [HttpGet]
-        public ActionResult<List<Image>> Get()
+        public ActionResult<IEnumerable<ImageReadResource>> Get()
         {
-            return _imageService.GetAll();
+            Response<IEnumerable<Image>> imagesResponse = _imageService.GetAll();
+
+            if (!imagesResponse.Success)
+                return BadRequest(imagesResponse.Message);
+
+            IEnumerable<ImageReadResource> resources = _mapper.Map<IEnumerable<Image>, IEnumerable<ImageReadResource>>(imagesResponse.Value);
+
+            return resources.ToList();
         }
 
-        [HttpGet("{id}", Name = "GetImage")]
-        public ActionResult<Image> Get(string id)
+        [HttpGet("{id}", Name = "GetById")]
+        public ActionResult<ImageReadResource> Get(string id)
         {
-            Image image = _imageService.GetById(id);
+            Response<Image> imageResponse = _imageService.GetById(id);
+
+            if (!imageResponse.Success)
+                return BadRequest(imageResponse.Message);
+
+            Image image = imageResponse.Value;
 
             if (image == null)
                 return NotFound();
 
-            return image;
+            ImageReadResource resource = _mapper.Map<Image, ImageReadResource>(image);
+
+            return resource;
         }
 
         [HttpPost]
-        public ActionResult<Image> Post([FromBody] Image image)
+        public ActionResult<ImageReadResource> Post([FromBody] ImageWriteResource imageWriteResource)
         {
-            ActionResult<Image> result;
+            Image image = _mapper.Map<ImageWriteResource, Image>(imageWriteResource);
 
-            try
-            {
-                string id = _imageService.Add(image);
-                result = CreatedAtRoute("GetImage", new { id }, image);
-            }
-            catch (LiteException e) when (e.ErrorCode == LiteException.INDEX_DUPLICATE_KEY)
-            {
-                result = Conflict(e.Message); // TODO give meaningful error response, should not expose db error
-            }
+            //try
+            //{
+            Response<Image> imageResponse = _imageService.Add(image);
 
-            return result;
+            if (!imageResponse.Success)
+                return BadRequest(imageResponse.Message);
+
+            //}
+            //catch (LiteException e) when (e.ErrorCode == LiteException.INDEX_DUPLICATE_KEY) // TODO no reference to LiteDB classes
+            //{
+            //    result = Conflict(e.Message); // TODO give meaningful error response, should not expose db error
+            //}
+
+            return CreatedAtRoute("GetById", new { id = imageResponse.Value.Id }, imageResponse.Value);
         }
 
-        [HttpPut("{id}")]
-        public void Put(string id, [FromBody] Image image)
-        {
-            // TODO implement put
-        }
+        //[HttpPut("{id}")]
+        //public void Put(string id, [FromBody] Image image)
+        //{
+        //    // TODO implement put
+        //}
 
         [HttpDelete("{id}")]
         public IActionResult Delete(string id)
         {
-            if (!_imageService.RemoveById(id))
-                return NotFound();
+            Response response = _imageService.RemoveById(id);
+
+            if (!response.Success)
+                return NotFound(response.Message);
 
             return NoContent();
         }

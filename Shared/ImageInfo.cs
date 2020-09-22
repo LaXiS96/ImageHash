@@ -1,5 +1,5 @@
-using System.IO;
 using SixLabors.ImageSharp;
+using System.IO;
 
 namespace LaXiS.ImageHash.Shared
 {

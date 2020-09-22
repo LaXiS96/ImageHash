@@ -353,4 +353,4 @@ MigrationBackup/
 .ionide/
 
 # LiteDB
-*.litedb4
+*.litedb*

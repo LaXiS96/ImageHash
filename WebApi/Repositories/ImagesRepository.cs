@@ -1,19 +1,22 @@
-﻿using LaXiS.ImageHash.WebApi.Domain.Models;
-using LaXiS.ImageHash.WebApi.Domain.Repositories;
+﻿using LaXiS.ImageHash.WebApi.Models;
 using LiteDB;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 
-namespace LaXiS.ImageHash.WebApi.Persistence.Repositories
+namespace LaXiS.ImageHash.WebApi.Repositories
 {
-    public class ImageRepository : IImageRepository
+    public class ImagesRepository : IImagesRepository, IDisposable
     {
+        private readonly ILogger<ImagesRepository> _logger;
         private readonly LiteDatabase _db;
-        private readonly LiteCollection<Image> _images;
+        private readonly ILiteCollection<Image> _images;
 
-        // TODO db handling should be in another layer, a repository only represents a single collection, not the whole database
-        // TODO LiteDBSettings should not be explicitly used, use options pattern
-        public ImageRepository(ILiteDBSettings settings)
+        public ImagesRepository(
+            ILogger<ImagesRepository> logger,
+            ILiteDBSettings settings)
         {
+            _logger = logger;
             _db = new LiteDatabase(settings.ConnectionString);
             _images = _db.GetCollection<Image>("Images");
 
@@ -23,7 +26,16 @@ namespace LaXiS.ImageHash.WebApi.Persistence.Repositories
         public string Create(Image image)
         {
             image.Id = ObjectId.NewObjectId().ToString();
-            image.Id = _images.Insert(image);
+            image.CreatedAt = DateTime.UtcNow;
+
+            try
+            {
+                _images.Insert(image);
+            }
+            catch (LiteException e) when (e.ErrorCode == LiteException.INDEX_DUPLICATE_KEY)
+            {
+                throw new Exception(e.Message);
+            }
 
             return image.Id;
         }
@@ -46,6 +58,11 @@ namespace LaXiS.ImageHash.WebApi.Persistence.Repositories
         public bool Delete(string id)
         {
             return _images.Delete(id);
+        }
+
+        public void Dispose()
+        {
+            _db?.Dispose();
         }
     }
 }

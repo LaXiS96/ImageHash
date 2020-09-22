@@ -1,9 +1,9 @@
-﻿using LaXiS.ImageHash.WebApi.Domain.Models;
+﻿using LaXiS.ImageHash.WebApi.Models;
 using System.Collections.Generic;
 
-namespace LaXiS.ImageHash.WebApi.Domain.Repositories
+namespace LaXiS.ImageHash.WebApi.Repositories
 {
-    public interface IImageRepository
+    public interface IImagesRepository
     {
         string Create(Image image);
 

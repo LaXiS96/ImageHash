@@ -7,8 +7,10 @@ namespace LaXiS.ImageHash.WebApi.Resources
         [Required]
         public string Name { get; set; }
 
-        public HashInfoWriteResource Hashes { get; set; }
-
+        [Required(AllowEmptyStrings = true)]
         public string Url { get; set; }
+
+        [Required(AllowEmptyStrings = true)]
+        public string Md5 { get; set; }
     }
 }

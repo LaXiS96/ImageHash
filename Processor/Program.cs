@@ -1,15 +1,14 @@
-﻿using System;
-using System.IO;
+﻿using LaXiS.ImageHash.Shared;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-// using LiteDB;
-using LaXiS.ImageHash.Shared;
 
 namespace LaXiS.ImageHash.Processor
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             List<string> mimeTypesFilter = new List<string>
             {

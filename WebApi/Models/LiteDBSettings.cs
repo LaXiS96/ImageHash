@@ -1,4 +1,4 @@
-﻿namespace LaXiS.ImageHash.WebApi.Domain.Models
+﻿namespace LaXiS.ImageHash.WebApi.Models
 {
     public class LiteDBSettings : ILiteDBSettings
     {

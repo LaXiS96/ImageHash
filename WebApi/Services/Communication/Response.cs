@@ -1,4 +1,4 @@
-﻿namespace LaXiS.ImageHash.WebApi.Domain.Services.Communication
+﻿namespace LaXiS.ImageHash.WebApi.Services.Communication
 {
     public class Response
     {

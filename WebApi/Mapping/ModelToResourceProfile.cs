@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using LaXiS.ImageHash.WebApi.Domain.Models;
+using LaXiS.ImageHash.WebApi.Models;
 using LaXiS.ImageHash.WebApi.Resources;
 
 namespace LaXiS.ImageHash.WebApi.Mapping
@@ -9,7 +9,6 @@ namespace LaXiS.ImageHash.WebApi.Mapping
         public ModelToResourceProfile()
         {
             CreateMap<Image, ImageReadResource>();
-            CreateMap<HashInfo, HashInfoReadResource>();
         }
     }
 }

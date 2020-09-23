@@ -1,5 +1,5 @@
 using AutoMapper;
-using LaXiS.ImageHash.WebApi.Models;
+using LaXiS.ImageHash.Models.Domain;
 using LaXiS.ImageHash.WebApi.Repositories;
 using LaXiS.ImageHash.WebApi.Services;
 using Microsoft.AspNetCore.Builder;
@@ -29,8 +29,8 @@ namespace LaXiS.ImageHash.WebApi
 
             services.AddSingleton<ILiteDBSettings>(sp => sp.GetRequiredService<IOptions<LiteDBSettings>>().Value);
 
-            services.AddScoped<IImagesRepository, ImagesRepository>();
-            services.AddScoped<IImagesService, ImagesService>();
+            services.AddSingleton<IImagesRepository, ImagesRepository>();
+            services.AddSingleton<IImagesService, ImagesService>();
 
             services.AddControllers();
         }
@@ -43,7 +43,7 @@ namespace LaXiS.ImageHash.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

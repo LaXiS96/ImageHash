@@ -16,11 +16,11 @@ namespace LaXiS.ImageHash.Shared
 
             byte[] data = md5.ComputeHash(stream);
 
-            StringBuilder str = new StringBuilder();
-            for (int i = 0; i < data.Length; i++)
-                str.Append(data[i].ToString("x2"));
+            StringBuilder hash = new StringBuilder(data.Length * 2);
+            foreach (byte b in data)
+                hash.AppendFormat("{0:x2}", b);
 
-            return str.ToString();
+            return hash.ToString();
         }
 
         // http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
@@ -59,7 +59,7 @@ namespace LaXiS.ImageHash.Shared
         }
 
         // http://www.hackerfactor.com/blog/index.php?/archives/529-Kind-of-Like-That.html
-        public static UInt64 DifferenceHash(FileStream stream)
+        public static string DifferenceHash(FileStream stream)
         {
             using Image<Rgba32> image = Image.Load<Rgba32>(stream);
 
@@ -86,7 +86,7 @@ namespace LaXiS.ImageHash.Shared
                 }
             }
 
-            return hash;
+            return hash.ToString("x16");
         }
 
         public static int HammingDistance(UInt64 hash1, UInt64 hash2)

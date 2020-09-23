@@ -1,4 +1,4 @@
-﻿using LaXiS.ImageHash.WebApi.Models;
+﻿using LaXiS.ImageHash.Models.Domain;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using System;

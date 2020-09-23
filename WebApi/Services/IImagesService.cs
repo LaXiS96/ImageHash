@@ -1,4 +1,4 @@
-﻿using LaXiS.ImageHash.WebApi.Models;
+﻿using LaXiS.ImageHash.Models.Domain;
 using LaXiS.ImageHash.WebApi.Services.Communication;
 using System.Collections.Generic;
 
@@ -10,9 +10,9 @@ namespace LaXiS.ImageHash.WebApi.Services
 
         Response<Image> Get(string id);
 
-        Response<Image> Add(Image image);
+        Response<string> Add(Image image);
 
-        Response<Image> Update(string id, Image image);
+        Response Update(string id, Image image);
 
         Response Remove(string id);
     }

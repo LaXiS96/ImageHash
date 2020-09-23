@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using LaXiS.ImageHash.WebApi.Models;
-using LaXiS.ImageHash.WebApi.Resources;
+using LaXiS.ImageHash.Models.Domain;
+using LaXiS.ImageHash.Models.Resources;
 
 namespace LaXiS.ImageHash.WebApi.Mapping
 {

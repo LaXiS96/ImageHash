@@ -1,4 +1,7 @@
-﻿using LaXiS.ImageHash.Shared;
+﻿using LaXiS.ImageHash.Models.Resources;
+using LaXiS.ImageHash.Shared;
+using LaXiS.ImageHash.WebApi.Client;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,17 +11,19 @@ namespace LaXiS.ImageHash.Processor
 {
     class Program
     {
+        static readonly List<string> mimeTypesFilter = new List<string>
+        {
+            "image/jpeg",
+            "image/png",
+            "image/bmp"
+        };
+
         static void Main()
         {
-            List<string> mimeTypesFilter = new List<string>
-            {
-                "image/jpeg",
-                "image/png",
-                "image/bmp"
-            };
-
-            // LiteDatabase db = new LiteDatabase(@"data.db");
-            // LiteCollection<ImageFile> imageFilesCollection = db.GetCollection<ImageFile>("imagefiles");
+            ILogger log = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+            ImagesClient client = new ImagesClient("http://10.0.1.202/");
 
             List<Task> taskList = new List<Task>();
 
@@ -27,80 +32,79 @@ namespace LaXiS.ImageHash.Processor
             int count = 0;
             foreach (FileInfo file in dir.EnumerateFiles())
             {
-                FileStream stream = file.OpenRead();
-                if (!mimeTypesFilter.Contains(ImageInfo.GetMimeType(stream)))
-                    continue;
-
                 count++;
-                // if (count > 500)
-                //     continue;
+                if (count > 100)
+                    break;
+                if (count % 200 == 0)
+                    log.Information("{count}", count);
 
-                taskList.Add(Task<string>.Factory.StartNew(o =>
+                //if (taskList.Count > 2)
+                //{
+                //    Task.WaitAny(taskList.ToArray());
+                //}
+
+                Task imageTask = new Task(() =>
                 {
-                    string md5Hash = "";
-                    // UInt64 averageHash = 0;
-                    UInt64 differenceHash = 0;
-
-                    FileStream imageStream = o as FileStream;
+                    FileStream imageStream = file.OpenRead();
+                    if (!mimeTypesFilter.Contains(ImageInfo.GetMimeType(imageStream)))
+                        return;
 
                     imageStream.Position = 0;
-                    md5Hash = Hashing.Md5Hash(imageStream);
+                    string md5Hash = Hashing.Md5Hash(imageStream);
 
                     // imageStream.Position = 0;
-                    // averageHash = AverageHash(imageStream);
+                    // UInt64 averageHash = AverageHash(imageStream);
 
                     imageStream.Position = 0;
-                    differenceHash = Hashing.DifferenceHash(imageStream);
+                    string differenceHash = Hashing.DifferenceHash(imageStream);
 
                     imageStream.Dispose();
 
+                    ImageWriteResource image = new ImageWriteResource
+                    {
+                        Name = file.Name,
+                        Url = file.FullName,
+                        Md5 = md5Hash,
+                        DifferenceHash = differenceHash
+                    };
+
+                    log.Information("{fileName}", file.Name);
+                    try
+                    {
+                        client.Post(image);
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(e, "{fileName}", file.Name);
+                    }
+
                     // return $"{md5Hash},{averageHash:x16},{differenceHash:x16},{file.Name}";
-                    return $"{md5Hash},{differenceHash:x16},{file.Name}";
-
-                    // ImageFile imageFileRecord = imageFilesCollection.FindOne(x => x.Md5Hash == md5Hash);
-                    // if (imageFileRecord == null)
-                    // {
-                    //     imageFileRecord = new ImageFile()
-                    //     {
-                    //         Name = file.Name,
-                    //         Md5Hash = md5Hash,
-                    //         AverageHash = averageHash
-                    //     };
-                    //     imageFilesCollection.Insert(imageFileRecord);
-                    // }
-                    // else
-                    // {
-                    //     imageFileRecord.AverageHash = averageHash;
-                    //     imageFilesCollection.Update(imageFileRecord);
-                    // }
-
-                    // imageFilesCollection.EnsureIndex("Md5Hash");
-
-                    // Console.WriteLine($"{file.Name} {md5Hash} {averageHash:x16}");
-                }, stream));
+                    //return $"{md5Hash},{differenceHash:x16},{file.Name}";
+                });
+                taskList.Add(imageTask);
+                imageTask.Start();
             }
 
-            Task.WaitAll(taskList.ToArray());
-
-            count = 0;
-            using (StreamWriter file = new StreamWriter(@"data.csv"))
+            try
             {
-                foreach (Task<string> t in taskList)
-                {
-                    // Console.WriteLine($"{count},{t.Result}");
-                    file.WriteLine($"{count},{t.Result}");
-
-                    count++;
-                }
+                Task.WaitAll(taskList.ToArray());
             }
+            catch (Exception e)
+            {
+                log.Error(e, "WaitAll()");
+            }
+
+            //count = 0;
+            //using (StreamWriter file = new StreamWriter(@"data.csv"))
+            //{
+            //    foreach (Task<string> t in taskList)
+            //    {
+            //        Console.WriteLine($"{count},{t.Result}");
+            //        //file.WriteLine($"{count},{t.Result}");
+
+            //        count++;
+            //    }
+            //}
         }
     }
-
-    // public class ImageFile
-    // {
-    //     public Guid Id { get; set; }
-    //     public string Name { get; set; }
-    //     public string Md5Hash { get; set; }
-    //     public UInt64 AverageHash { get; set; }
-    // }
 }

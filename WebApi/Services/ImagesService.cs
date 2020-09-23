@@ -1,4 +1,4 @@
-﻿using LaXiS.ImageHash.WebApi.Models;
+﻿using LaXiS.ImageHash.Models.Domain;
 using LaXiS.ImageHash.WebApi.Repositories;
 using LaXiS.ImageHash.WebApi.Services.Communication;
 using System;
@@ -15,7 +15,7 @@ namespace LaXiS.ImageHash.WebApi.Services
             _imageRepository = imageRepository;
         }
 
-        public Response<Image> Add(Image image)
+        public Response<string> Add(Image image)
         {
             string id;
 
@@ -25,12 +25,10 @@ namespace LaXiS.ImageHash.WebApi.Services
             }
             catch (Exception e)
             {
-                return new Response<Image>(false, $"Could not create Image: {e.Message}", null);
+                return new Response<string>(false, $"Could not create Image: {e.Message}", string.Empty);
             }
 
-            image = _imageRepository.Read(id);
-
-            return new Response<Image>(true, string.Empty, image);
+            return new Response<string>(true, string.Empty, id);
         }
 
         public Response<IEnumerable<Image>> Get()
@@ -44,22 +42,20 @@ namespace LaXiS.ImageHash.WebApi.Services
             return new Response<Image>(true, string.Empty, _imageRepository.Read(id));
         }
 
-        public Response<Image> Update(string id, Image image)
+        public Response Update(string id, Image image)
         {
             Image originalImage = _imageRepository.Read(id);
 
             if (originalImage == null)
-                return new Response<Image>(false, $"Image with Id \"{id}\" not found", null);
+                return new Response(false, $"Image with Id \"{id}\" not found");
 
             image.Id = originalImage.Id;
             image.CreatedAt = originalImage.CreatedAt;
 
             if (!_imageRepository.Update(image))
-                return new Response<Image>(false, $"Update unsuccessful", null);
+                return new Response(false, $"Update unsuccessful");
 
-            image = _imageRepository.Read(id);
-
-            return new Response<Image>(true, string.Empty, image);
+            return new Response(true, string.Empty);
         }
 
         public Response Remove(string id)

@@ -1,4 +1,4 @@
-﻿using LaXiS.ImageHash.WebApi.Models;
+﻿using LaXiS.ImageHash.Models.Domain;
 using System.Collections.Generic;
 
 namespace LaXiS.ImageHash.WebApi.Repositories

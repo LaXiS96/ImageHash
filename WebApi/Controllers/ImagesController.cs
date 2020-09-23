@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using LaXiS.ImageHash.WebApi.Models;
-using LaXiS.ImageHash.WebApi.Resources;
+using LaXiS.ImageHash.Models.Domain;
+using LaXiS.ImageHash.Models.Resources;
 using LaXiS.ImageHash.WebApi.Services;
 using LaXiS.ImageHash.WebApi.Services.Communication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
@@ -60,19 +59,21 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         }
 
         [HttpPost]
-        public ActionResult<ImageReadResource> Post(
+        public ActionResult Post(
             [FromBody] ImageWriteResource imageWriteResource)
         {
             Image image = _mapper.Map<ImageWriteResource, Image>(imageWriteResource);
 
-            Response<Image> response = _imagesService.Add(image);
+            Response<string> response = _imagesService.Add(image);
 
             if (!response.Success)
                 return BadRequest(response.Message);
 
-            ImageReadResource resource = _mapper.Map<Image, ImageReadResource>(response.Value);
-
-            return CreatedAtAction(nameof(Get), new { id = resource.Id }, resource);
+            object ret = new
+            {
+                id = response.Value
+            };
+            return CreatedAtAction(nameof(Get), ret, ret);
         }
 
         [HttpPut("{id}")]
@@ -82,14 +83,12 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         {
             Image image = _mapper.Map<ImageWriteResource, Image>(imageWriteResource);
 
-            Response<Image> response = _imagesService.Update(id, image);
+            Response response = _imagesService.Update(id, image);
 
             if (!response.Success)
                 return BadRequest(response.Message);
 
-            ImageReadResource resource = _mapper.Map<Image, ImageReadResource>(response.Value);
-
-            return CreatedAtAction(nameof(Get), new { id = resource.Id }, resource);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]

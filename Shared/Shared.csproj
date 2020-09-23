@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>LaXiS.ImageHash.Shared</AssemblyName>
+    <RootNamespace>LaXiS.ImageHash.Shared</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

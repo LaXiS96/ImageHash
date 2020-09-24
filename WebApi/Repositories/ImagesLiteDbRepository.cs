@@ -1,23 +1,24 @@
 ﻿using LaXiS.ImageHash.Models.Domain;
 using LiteDB;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 
 namespace LaXiS.ImageHash.WebApi.Repositories
 {
-    public class ImagesRepository : IImagesRepository, IDisposable
+    public class ImagesLiteDbRepository : IImagesRepository, IDisposable
     {
-        private readonly ILogger<ImagesRepository> _logger;
+        private readonly ILogger<ImagesLiteDbRepository> _logger;
         private readonly LiteDatabase _db;
         private readonly ILiteCollection<Image> _images;
 
-        public ImagesRepository(
-            ILogger<ImagesRepository> logger,
-            ILiteDBSettings settings)
+        public ImagesLiteDbRepository(
+            ILogger<ImagesLiteDbRepository> logger,
+            IOptions<LiteDbSettings> settings)
         {
             _logger = logger;
-            _db = new LiteDatabase(settings.ConnectionString);
+            _db = new LiteDatabase(settings.Value.ConnectionString);
             _images = _db.GetCollection<Image>("Images");
 
             _images.EnsureIndex("Name", true);
@@ -34,7 +35,7 @@ namespace LaXiS.ImageHash.WebApi.Repositories
             }
             catch (LiteException e) when (e.ErrorCode == LiteException.INDEX_DUPLICATE_KEY)
             {
-                throw new Exception(e.Message);
+                throw new InvalidOperationException(e.Message);
             }
 
             return image.Id;

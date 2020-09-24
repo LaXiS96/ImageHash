@@ -9,6 +9,7 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
 COPY ["WebApi/WebApi.csproj", "WebApi/"]
 COPY ["Models/Models.csproj", "Models/"]
+COPY ["VantagePointTree/VantagePointTree/VantagePointTree.csproj", "VantagePointTree/VantagePointTree/"]
 RUN dotnet restore "WebApi/WebApi.csproj"
 COPY . .
 WORKDIR "/src/WebApi"

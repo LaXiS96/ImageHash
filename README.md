@@ -13,6 +13,6 @@ Solution which consists of:
     - `WebApi.Controllers`: API endpoint controllers
     - `WebApi.Mapping`: AutoMapper configuration classes
     - `WebApi.Repositories`: entity repositories (data access layer)
-    - `WebApi.Services`: entity managers
+    - `WebApi.Services`: business logic and interaction between entities
 - `WebApi.Client`: client for WebApi consumation
 - `WebApi.Test`: tests

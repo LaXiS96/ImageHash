@@ -63,5 +63,11 @@ namespace LaXiS.ImageHash.WebApi.Services
             bool result = _imageRepository.Delete(id);
             return new Response(result, result ? string.Empty : $"Image with id \"{id}\" not found");
         }
+
+        public Response<IEnumerable<Image>> GetSimilar(string id)
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
     }
 }

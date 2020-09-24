@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace LaXiS.ImageHash.WebApi
 {
@@ -25,11 +24,20 @@ namespace LaXiS.ImageHash.WebApi
         {
             services.AddAutoMapper(typeof(Startup));
 
-            services.Configure<LiteDBSettings>(Configuration.GetSection("LiteDB"));
+            services.Configure<WebApiSettings>(Configuration.GetSection("WebApi"));
+            services.Configure<LiteDbSettings>(Configuration.GetSection("LiteDb"));
+            services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDb"));
 
-            services.AddSingleton<ILiteDBSettings>(sp => sp.GetRequiredService<IOptions<LiteDBSettings>>().Value);
+            switch (Configuration.GetSection("WebApi").GetValue("BackendDb", BackendDbType.LiteDb))
+            {
+                case BackendDbType.LiteDb:
+                    services.AddSingleton<IImagesRepository, ImagesLiteDbRepository>();
+                    break;
+                case BackendDbType.MongoDb:
+                    services.AddSingleton<IImagesRepository, ImagesMongoDbRepository>();
+                    break;
+            }
 
-            services.AddSingleton<IImagesRepository, ImagesRepository>();
             services.AddSingleton<IImagesService, ImagesService>();
 
             services.AddControllers();

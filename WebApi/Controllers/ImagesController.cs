@@ -29,7 +29,7 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<ImageReadResource>> Get()
+        public IActionResult Get()
         {
             Response<IEnumerable<Image>> imagesResponse = _imagesService.Get();
 
@@ -38,11 +38,11 @@ namespace LaXiS.ImageHash.WebApi.Controllers
 
             IEnumerable<ImageReadResource> resources = _mapper.Map<IEnumerable<Image>, IEnumerable<ImageReadResource>>(imagesResponse.Value);
 
-            return resources.ToList();
+            return Ok(resources);
         }
 
         [HttpGet("{id}")]
-        public ActionResult<ImageReadResource> Get(
+        public IActionResult Get(
             [FromRoute] string id)
         {
             Response<Image> response = _imagesService.Get(id);
@@ -55,11 +55,11 @@ namespace LaXiS.ImageHash.WebApi.Controllers
 
             ImageReadResource resource = _mapper.Map<Image, ImageReadResource>(response.Value);
 
-            return resource;
+            return Ok(resource);
         }
 
         [HttpPost]
-        public ActionResult Post(
+        public IActionResult Post(
             [FromBody] ImageWriteResource imageWriteResource)
         {
             Image image = _mapper.Map<ImageWriteResource, Image>(imageWriteResource);
@@ -77,7 +77,7 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public ActionResult<ImageReadResource> Put(
+        public IActionResult Put(
             [FromRoute] string id,
             [FromBody] ImageWriteResource imageWriteResource)
         {
@@ -101,6 +101,20 @@ namespace LaXiS.ImageHash.WebApi.Controllers
                 return NotFound(response.Message);
 
             return NoContent();
+        }
+
+        [HttpGet("{id}/similar/")]
+        public IActionResult GetSimilar(
+            [FromRoute] string id)
+        {
+            Response<IEnumerable<Image>> response = _imagesService.GetSimilar(id);
+
+            if (!response.Success)
+                return BadRequest(response.Message); // TODO
+
+            IEnumerable<ImageReadResource> resources = _mapper.Map<IEnumerable<Image>, IEnumerable<ImageReadResource>>(response.Value);
+
+            return Ok(resources);
         }
     }
 }

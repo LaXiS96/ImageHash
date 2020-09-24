@@ -15,5 +15,7 @@ namespace LaXiS.ImageHash.WebApi.Services
         Response Update(string id, Image image);
 
         Response Remove(string id);
+
+        Response<IEnumerable<Image>> GetSimilar(string id);
     }
 }

@@ -2,6 +2,7 @@ using AutoMapper;
 using LaXiS.ImageHash.Models.Domain;
 using LaXiS.ImageHash.WebApi.Repositories;
 using LaXiS.ImageHash.WebApi.Services;
+using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,23 +25,17 @@ namespace LaXiS.ImageHash.WebApi
         {
             services.AddAutoMapper(typeof(Startup));
 
-            services.Configure<WebApiSettings>(Configuration.GetSection("WebApi"));
-            services.Configure<LiteDbSettings>(Configuration.GetSection("LiteDb"));
             services.Configure<MongoDbSettings>(Configuration.GetSection("MongoDb"));
 
-            switch (Configuration.GetSection("WebApi").GetValue("BackendDb", BackendDbType.LiteDb))
-            {
-                case BackendDbType.LiteDb:
-                    services.AddSingleton<IImagesRepository, ImagesLiteDbRepository>();
-                    break;
-                case BackendDbType.MongoDb:
-                    services.AddSingleton<IImagesRepository, ImagesMongoDbRepository>();
-                    break;
-            }
+            services.AddSingleton<IRepository<ImageDomainModel>, ImagesRepository>();
+            services.AddSingleton<IRepository<TagDomainModel>, TagsRepository>();
+            services.AddSingleton<IRepository<TagCategoryDomainModel>, TagCategoriesRepository>();
 
             services.AddSingleton<IImagesService, ImagesService>();
+            services.AddSingleton<ITagsService, TagsService>();
 
             services.AddControllers();
+            services.AddOData();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,6 +55,9 @@ namespace LaXiS.ImageHash.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+
+                endpoints.EnableDependencyInjection();
+                endpoints.Filter().OrderBy().MaxTop(50).Count();
             });
         }
     }

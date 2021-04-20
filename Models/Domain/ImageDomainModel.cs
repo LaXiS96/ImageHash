@@ -1,17 +1,23 @@
-﻿using System;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.Collections.Generic;
 
-namespace LaXiS.ImageHash.Models.Resources
+namespace LaXiS.ImageHash.Models.Domain
 {
-    public class ImageReadResource
+    public class ImageDomainModel
     {
         public string Id { get; set; }
+
         public string Name { get; set; }
 
-        [Expandable(typeof(IEnumerable<TagReadResource>))]
         public IEnumerable<string> Tags { get; set; }
 
+        [BsonIgnore]
+        [Navigation(nameof(Tags))]
+        public IEnumerable<TagDomainModel> TagsEntities { get; set; }
+
         public DateTime CreatedAt { get; set; }
+
         public DateTime UpdatedAt { get; set; }
     }
 }

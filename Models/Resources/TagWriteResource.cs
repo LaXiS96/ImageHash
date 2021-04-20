@@ -3,11 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LaXiS.ImageHash.Models.Resources
 {
-    public class ImageWriteResource
+    public class TagWriteResource
     {
         [Required]
         public string Name { get; set; }
 
-        public IEnumerable<string> Tags { get; set; }
+        public string Category { get; set; }
     }
 }

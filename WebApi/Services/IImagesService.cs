@@ -6,16 +6,16 @@ namespace LaXiS.ImageHash.WebApi.Services
 {
     public interface IImagesService
     {
-        Response<IEnumerable<Image>> Get();
+        Response<IEnumerable<ImageDomainModel>> Get();
 
-        Response<Image> Get(string id);
+        Response<ImageDomainModel> Get(string id);
 
-        Response<string> Add(Image image);
+        Response<string> Add(ImageDomainModel image);
 
-        Response Update(string id, Image image);
+        Response Update(string id, ImageDomainModel image);
 
         Response Remove(string id);
 
-        Response<IEnumerable<Image>> GetSimilar(string id);
+        Response<IEnumerable<ImageDomainModel>> GetSimilar(string id);
     }
 }

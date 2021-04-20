@@ -1,0 +1,25 @@
+# Entities
+- Image
+    id: string
+    name: string
+    tags: Tag[]
+    createdAt: date
+    updatedAt: date
+- Tag
+    id: string
+    name: string
+    category: TagCategory
+- TagCategory
+    id: string
+    name: string
+
+# Notes
+- 
+
+# Endpoints
+- /images
+    - :id
+    - ?tags=[]  filter by tags
+
+# Frontend
+- 

@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using LaXiS.ImageHash.Models.Domain;
 using LaXiS.ImageHash.Models.Resources;
+using LaXiS.ImageHash.WebApi.Repositories;
 using LaXiS.ImageHash.WebApi.Services;
 using LaXiS.ImageHash.WebApi.Services.Communication;
+using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace LaXiS.ImageHash.WebApi.Controllers
@@ -29,31 +31,27 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        [EnableQuery]
+        public IQueryable<ImageReadResource> Get(
+            [FromServices] IRepository<ImageDomainModel> imagesRepository)
         {
-            Response<IEnumerable<Image>> imagesResponse = _imagesService.Get();
-
-            if (!imagesResponse.Success)
-                return BadRequest(imagesResponse.Message);
-
-            IEnumerable<ImageReadResource> resources = _mapper.Map<IEnumerable<Image>, IEnumerable<ImageReadResource>>(imagesResponse.Value);
-
-            return Ok(resources);
+            return imagesRepository.Get()
+                .ProjectTo<ImageReadResource>(_mapper.ConfigurationProvider);
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(
             [FromRoute] string id)
         {
-            Response<Image> response = _imagesService.Get(id);
+            Response<ImageDomainModel> response = _imagesService.Get(id);
 
-            if (!response.Success)
+            if (!response.Successful)
                 return BadRequest(response.Message);
 
             if (response.Value == null)
                 return NotFound();
 
-            ImageReadResource resource = _mapper.Map<Image, ImageReadResource>(response.Value);
+            ImageReadResource resource = _mapper.Map<ImageDomainModel, ImageReadResource>(response.Value);
 
             return Ok(resource);
         }
@@ -62,11 +60,11 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         public IActionResult Post(
             [FromBody] ImageWriteResource imageWriteResource)
         {
-            Image image = _mapper.Map<ImageWriteResource, Image>(imageWriteResource);
+            ImageDomainModel image = _mapper.Map<ImageWriteResource, ImageDomainModel>(imageWriteResource);
 
             Response<string> response = _imagesService.Add(image);
 
-            if (!response.Success)
+            if (!response.Successful)
                 return BadRequest(response.Message);
 
             object ret = new
@@ -81,11 +79,11 @@ namespace LaXiS.ImageHash.WebApi.Controllers
             [FromRoute] string id,
             [FromBody] ImageWriteResource imageWriteResource)
         {
-            Image image = _mapper.Map<ImageWriteResource, Image>(imageWriteResource);
+            ImageDomainModel image = _mapper.Map<ImageWriteResource, ImageDomainModel>(imageWriteResource);
 
             Response response = _imagesService.Update(id, image);
 
-            if (!response.Success)
+            if (!response.Successful)
                 return BadRequest(response.Message);
 
             return NoContent();
@@ -97,24 +95,24 @@ namespace LaXiS.ImageHash.WebApi.Controllers
         {
             Response response = _imagesService.Remove(id);
 
-            if (!response.Success)
+            if (!response.Successful)
                 return NotFound(response.Message);
 
             return NoContent();
         }
 
-        [HttpGet("{id}/similar/")]
-        public IActionResult GetSimilar(
-            [FromRoute] string id)
-        {
-            Response<IEnumerable<Image>> response = _imagesService.GetSimilar(id);
+        //[HttpGet("{id}/similar/")]
+        //public IActionResult GetSimilar(
+        //    [FromRoute] string id)
+        //{
+        //    Response<IEnumerable<ImageDomainModel>> response = _imagesService.GetSimilar(id);
 
-            if (!response.Success)
-                return BadRequest(response.Message); // TODO
+        //    if (!response.Successful)
+        //        return BadRequest(response.Message); // TODO
 
-            IEnumerable<ImageReadResource> resources = _mapper.Map<IEnumerable<Image>, IEnumerable<ImageReadResource>>(response.Value);
+        //    IEnumerable<ImageReadResource> resources = _mapper.Map<IEnumerable<ImageDomainModel>, IEnumerable<ImageReadResource>>(response.Value);
 
-            return Ok(resources);
-        }
+        //    return Ok(resources);
+        //}
     }
 }

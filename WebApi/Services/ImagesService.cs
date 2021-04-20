@@ -8,63 +8,70 @@ namespace LaXiS.ImageHash.WebApi.Services
 {
     public class ImagesService : IImagesService
     {
-        private readonly IImagesRepository _imageRepository;
+        private readonly IRepository<ImageDomainModel> _imagesRepository;
+        private readonly IRepository<TagDomainModel> _tagsRepository;
 
-        public ImagesService(IImagesRepository imageRepository)
+        public ImagesService(
+            IRepository<ImageDomainModel> imageRepository,
+            IRepository<TagDomainModel> tagsRepository)
         {
-            _imageRepository = imageRepository;
+            _imagesRepository = imageRepository;
+            _tagsRepository = tagsRepository;
         }
 
-        public Response<string> Add(Image image)
+        public Response<string> Add(ImageDomainModel image)
         {
             string id;
 
+            // TODO check existence of tags
+
             try
             {
-                id = _imageRepository.Create(image);
+                id = _imagesRepository.Add(image);
             }
             catch (Exception e)
             {
-                return new Response<string>(false, $"Could not create Image: {e.Message}", string.Empty);
+                return Response<string>.Failure(e);
             }
 
-            return new Response<string>(true, string.Empty, id);
+            return Response<string>.Success(id);
         }
 
-        public Response<IEnumerable<Image>> Get()
+        public Response<IEnumerable<ImageDomainModel>> Get()
         {
-            return new Response<IEnumerable<Image>>(true, string.Empty, _imageRepository.Read());
+            return Response<IEnumerable<ImageDomainModel>>.Success(_imagesRepository.Get());
         }
 
-        public Response<Image> Get(string id)
+        public Response<ImageDomainModel> Get(string id)
         {
-            // TODO test, this could fail
-            return new Response<Image>(true, string.Empty, _imageRepository.Read(id));
+            return Response<ImageDomainModel>.Success(_imagesRepository.Get(id));
         }
 
-        public Response Update(string id, Image image)
+        public Response Update(string id, ImageDomainModel image)
         {
-            Image originalImage = _imageRepository.Read(id);
+            ImageDomainModel originalImage = _imagesRepository.Get(id);
 
             if (originalImage == null)
-                return new Response(false, $"Image with Id \"{id}\" not found");
+                return Response.Failure($"Image with Id \"{id}\" not found");
 
             image.Id = originalImage.Id;
             image.CreatedAt = originalImage.CreatedAt;
 
-            if (!_imageRepository.Update(image))
-                return new Response(false, $"Update unsuccessful");
+            if (!_imagesRepository.Update(image))
+                return Response.Failure($"Update unsuccessful");
 
-            return new Response(true, string.Empty);
+            return Response.Success();
         }
 
         public Response Remove(string id)
         {
-            bool result = _imageRepository.Delete(id);
-            return new Response(result, result ? string.Empty : $"Image with id \"{id}\" not found");
+            if (_imagesRepository.Remove(id))
+                return Response.Success();
+            else
+                return Response.Failure($"Image with Id \"{id}\" not found");
         }
 
-        public Response<IEnumerable<Image>> GetSimilar(string id)
+        public Response<IEnumerable<ImageDomainModel>> GetSimilar(string id)
         {
             // TODO
             throw new NotImplementedException();

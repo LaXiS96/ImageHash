@@ -1,4 +1,4 @@
-using LaXiS.ImageHash.Models.Resources;
+﻿using LaXiS.ImageHash.Models.Resources;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Net;
@@ -6,13 +6,13 @@ using Xunit;
 
 namespace LaXiS.ImageHash.WebApi.Test
 {
-    public class ImagesControllerTest : IClassFixture<WebApiFixture>
+    public class TagsControllerTest : IClassFixture<WebApiFixture>
     {
-        private static readonly string ControllerUri = "/images";
+        private static readonly string ControllerUri = "/tags";
 
         private readonly WebApiFixture _fixture;
 
-        public ImagesControllerTest(
+        public TagsControllerTest(
             WebApiFixture fixture)
         {
             _fixture = fixture;
@@ -21,10 +21,9 @@ namespace LaXiS.ImageHash.WebApi.Test
         [Fact]
         public async void Post()
         {
-            var obj = new ImageWriteResource
+            var obj = new TagWriteResource
             {
-                Name = "TestPost",
-                Tags = new string[] { "TestPost" }
+                Name = "TestPost"
             };
 
             var res = await _fixture.Client.PostAsync(ControllerUri, HttpUtils.ObjectToJson(obj));
@@ -37,26 +36,25 @@ namespace LaXiS.ImageHash.WebApi.Test
         [Fact]
         public async void Get()
         {
-            var obj = new ImageWriteResource
+            var obj = new TagWriteResource
             {
-                Name = "TestGet",
-                Tags = new string[] { "TestGet1", "TestGet2" }
+                Name = "TestGet"
             };
 
             var res = await _fixture.Client.PostAsync(ControllerUri, HttpUtils.ObjectToJson(obj));
             Assert.True(res.IsSuccessStatusCode);
 
-            res = await _fixture.Client.GetAsync($"{ControllerUri}?$filter=name eq 'TestGet'");
+            res = await _fixture.Client.GetAsync(ControllerUri);
             Assert.True(res.IsSuccessStatusCode);
 
             Assert.Contains(res.AsJson(), t =>
-                (t as JObject).GetValue(nameof(ImageWriteResource.Name), StringComparison.OrdinalIgnoreCase).ToString() == obj.Name);
+                (t as JObject).GetValue(nameof(TagWriteResource.Name), StringComparison.OrdinalIgnoreCase).ToString() == obj.Name);
         }
 
         [Fact]
         public async void Put()
         {
-            var obj = new ImageWriteResource
+            var obj = new TagWriteResource
             {
                 Name = "TestPut"
             };
@@ -73,13 +71,13 @@ namespace LaXiS.ImageHash.WebApi.Test
             res = await _fixture.Client.GetAsync($"{ControllerUri}/{id}");
             Assert.True(res.IsSuccessStatusCode);
 
-            Assert.True((res.AsJson() as JObject).GetValue(nameof(ImageWriteResource.Name), StringComparison.OrdinalIgnoreCase).ToString() == obj.Name);
+            Assert.True((res.AsJson() as JObject).GetValue(nameof(TagWriteResource.Name), StringComparison.OrdinalIgnoreCase).ToString() == obj.Name);
         }
 
         [Fact]
         public async void Delete()
         {
-            var obj = new ImageWriteResource
+            var obj = new TagWriteResource
             {
                 Name = "TestDelete"
             };
